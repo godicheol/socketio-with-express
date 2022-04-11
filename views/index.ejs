@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel='stylesheet' href='/stylesheets/style.css' />
+</head>
+
+<body>
+ 
+  <div>
+    <ul id="messages"></ul>
+    <form id="send-message-form">
+      <span id="my-name">Guest</span>
+      <span style="margin: 0 0.2rem; font-weight: 700;">:</span>
+      <input id="my-message" type="text" autocomplete="off">
+      <button type="submit">Send</button>
+    </form>
+  </div>
+</body>
+<script src="/socket/socket.io.js"></script>
+<script>
+  (function() {
+    var name = document.getElementById("my-name").innerHTML;
+    var socket = io();
+
+    function setName() {
+      name = window.prompt("Who you are?");
+
+      if (name.trim() == "") {
+        name = "Idiot";
+      }
+
+      adjustName();
+    }
+    
+    function adjustName() {
+      document.getElementById("my-name").innerHTML = name;
+    }
+
+    // change name
+    document.getElementById("my-name").addEventListener("click", setName, false);
+
+    // send message
+    document.getElementById("send-message-form").addEventListener("submit", function(e) {
+      e.preventDefault(); // prevent submit
+      var msg = {
+        name: name,
+        message: document.getElementById("my-message").value,
+      }
+      socket.emit("chat", msg);
+
+      document.getElementById("my-message").value = "";
+
+    }, false);
+
+    // get message
+    socket.on("chat", function(msg) {
+      var html = "<li>";
+      html += "<span style='display: inline-block; width: 80px;'>";
+      html += msg.name;
+      html += "</span>";
+      html += "  :  ";
+      html += "<span>";
+      html += msg.message;
+      html += "</span>";
+      html += "</li>";
+      document.getElementById("messages").innerHTML += html;
+    });
+
+    // get message
+    socket.on("news", function(msg) {
+      var html = "<li>";
+      html += "<span style='display: inline-block; width: 80px;'>";
+      html += msg.name;
+      html += "</span>";
+      html += " : ";
+      html += "<span>";
+      html += msg.message;
+      html += "</span>";
+      html += "</li>";
+      document.getElementById("messages").innerHTML += html;
+    });
+
+  })();
+</script>
+
+</html>
